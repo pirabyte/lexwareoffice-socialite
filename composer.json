@@ -1,0 +1,21 @@
+{
+    "name": "pirabyte/lexwareoffice-socialite",
+    "description": "Lexware Office OAuth2 Provider for Laravel Socialite",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "pirabyte",
+            "email": "support@pirabyte.io"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "ext-json": "*",
+        "socialiteproviders/manager": "^4.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pirabyte\\Socialite\\LexwareOffice\\": ""
+        }
+    }
+}
