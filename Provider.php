@@ -48,20 +48,39 @@ class Provider extends AbstractProvider
     public function setConfig($config)
     {
         parent::setConfig($config);
-        
+
         // Extract URL from additional config options using reflection
         // The Config object stores additional config as a protected property
         $reflection = new \ReflectionClass($config);
-        if ($reflection->hasProperty('additionalConfig')) {
-            $property = $reflection->getProperty('additionalConfig');
-            $property->setAccessible(true);
-            $additionalConfig = $property->getValue($config);
-            
-            if (is_array($additionalConfig) && isset($additionalConfig['url'])) {
-                $this->customBaseUrl = $additionalConfig['url'];
+
+        // Try to find the additionalConfig property - it might have different names
+        $propertyNames = ['additionalConfig', 'additional', 'extra', 'options'];
+
+        foreach ($propertyNames as $propertyName) {
+            if ($reflection->hasProperty($propertyName)) {
+                $property = $reflection->getProperty($propertyName);
+                $property->setAccessible(true);
+                $additionalConfig = $property->getValue($config);
+
+                if (is_array($additionalConfig) && isset($additionalConfig['url'])) {
+                    $this->customBaseUrl = $additionalConfig['url'];
+                    return $this;
+                }
             }
         }
-        
+
+        // Fallback: Try to find any property that contains an array with 'url' key
+        $allProperties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED | \ReflectionProperty::IS_PRIVATE);
+        foreach ($allProperties as $property) {
+            $property->setAccessible(true);
+            $value = $property->getValue($config);
+
+            if (is_array($value) && isset($value['url'])) {
+                $this->customBaseUrl = $value['url'];
+                return $this;
+            }
+        }
+
         return $this;
     }
 
