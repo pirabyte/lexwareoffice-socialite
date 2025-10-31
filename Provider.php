@@ -17,11 +17,60 @@ class Provider extends AbstractProvider
     protected $scopes = [''];
 
     /**
+     * Store the custom base URL when set via setConfig
+     * 
+     * @var string|null
+     */
+    protected $customBaseUrl = null;
+
+    /**
+     * Get the base URL from config or additional config options
+     * 
+     * @return string
+     */
+    protected function getBaseUrl(): string
+    {
+        // If custom URL was set via setConfig, use it
+        if ($this->customBaseUrl !== null) {
+            return $this->customBaseUrl;
+        }
+        
+        // Fallback to config file
+        return \config('services.lexwareoffice.url', '');
+    }
+
+    /**
+     * Override setConfig to capture additional config options
+     * 
+     * @param \SocialiteProviders\Manager\Config $config
+     * @return $this
+     */
+    public function setConfig($config)
+    {
+        parent::setConfig($config);
+        
+        // Extract URL from additional config options using reflection
+        // The Config object stores additional config as a protected property
+        $reflection = new \ReflectionClass($config);
+        if ($reflection->hasProperty('additionalConfig')) {
+            $property = $reflection->getProperty('additionalConfig');
+            $property->setAccessible(true);
+            $additionalConfig = $property->getValue($config);
+            
+            if (is_array($additionalConfig) && isset($additionalConfig['url'])) {
+                $this->customBaseUrl = $additionalConfig['url'];
+            }
+        }
+        
+        return $this;
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function getAuthUrl($state)
     {
-        return $this->buildAuthUrlFromBase(config('services.lexwareoffice.url') . '/oauth2/authorize', $state);
+        return $this->buildAuthUrlFromBase($this->getBaseUrl() . '/oauth2/authorize', $state);
     }
 
     /**
@@ -29,7 +78,7 @@ class Provider extends AbstractProvider
      */
     protected function getTokenUrl()
     {
-        return config('services.lexwareoffice.url') . '/oauth2/token';
+        return $this->getBaseUrl() . '/oauth2/token';
     }
 
     /**
