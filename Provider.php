@@ -18,14 +18,14 @@ class Provider extends AbstractProvider
 
     /**
      * Store the custom base URL when set via setConfig
-     * 
+     *
      * @var string|null
      */
     protected $customBaseUrl = null;
 
     /**
      * Get the base URL from config or additional config options
-     * 
+     *
      * @return string
      */
     protected function getBaseUrl(): string
@@ -34,14 +34,14 @@ class Provider extends AbstractProvider
         if ($this->customBaseUrl !== null) {
             return $this->customBaseUrl;
         }
-        
+
         // Fallback to config file
         return \config('services.lexwareoffice.url', '');
     }
 
     /**
      * Override setConfig to capture additional config options
-     * 
+     *
      * @param \SocialiteProviders\Manager\Config $config
      * @return $this
      */
@@ -53,32 +53,39 @@ class Provider extends AbstractProvider
         // The Config object stores additional config as a protected property
         $reflection = new \ReflectionClass($config);
 
-        // Try to find the additionalConfig property - it might have different names
-        $propertyNames = ['additionalConfig', 'additional', 'extra', 'options'];
-
-        foreach ($propertyNames as $propertyName) {
-            if ($reflection->hasProperty($propertyName)) {
-                $property = $reflection->getProperty($propertyName);
-                $property->setAccessible(true);
-                $additionalConfig = $property->getValue($config);
-
-                if (is_array($additionalConfig) && isset($additionalConfig['url'])) {
-                    $this->customBaseUrl = $additionalConfig['url'];
-                    return $this;
-                }
-            }
-        }
-
-        // Fallback: Try to find any property that contains an array with 'url' key
+        // Debug: Log all properties to understand the structure
         $allProperties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED | \ReflectionProperty::IS_PRIVATE);
+        $foundUrl = false;
+
         foreach ($allProperties as $property) {
             $property->setAccessible(true);
             $value = $property->getValue($config);
 
+            // Check if this property contains an array with 'url' key
             if (is_array($value) && isset($value['url'])) {
                 $this->customBaseUrl = $value['url'];
-                return $this;
+                $foundUrl = true;
+                \Log::debug('LexwareOffice Provider: Found URL in property', [
+                    'property' => $property->getName(),
+                    'url' => $value['url'],
+                ]);
+                break;
             }
+
+            // Also check if the property itself might be the URL (unlikely but possible)
+            if (is_string($value) && filter_var($value, FILTER_VALIDATE_URL) !== false) {
+                // This might be a URL, but we're looking for the array structure
+                \Log::debug('LexwareOffice Provider: Found URL-like string in property', [
+                    'property' => $property->getName(),
+                    'value' => $value,
+                ]);
+            }
+        }
+
+        if (!$foundUrl) {
+            \Log::warning('LexwareOffice Provider: Could not find URL in config', [
+                'property_names' => array_map(fn($p) => $p->getName(), $allProperties),
+            ]);
         }
 
         return $this;
