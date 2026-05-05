@@ -8,8 +8,8 @@ Add the following to your `services.php`,
 
 ```php
 'lexwareoffice' => [
-    'url' => env('LEXWARE_OFFICE_URL', 'https://lexoffice-sandbox.grld.eu'),
-    'api' => env('LEXWARE_OFFICE_API', 'https://api-sandbox.grld.eu'),
+    'url' => env('LEXWARE_OFFICE_URL', 'https://sandbox.example.com'),
+    'api' => env('LEXWARE_OFFICE_API', 'https://api.sandbox.example.com'),
     'client_id' => env('LEXWARE_OFFICE_CLIENT_ID'),
     'client_secret' => env('LEXWARE_OFFICE_CLIENT_SECRET'),
     'redirect' => env('LEXWARE_OFFICE_REDIRECT_URL'),
