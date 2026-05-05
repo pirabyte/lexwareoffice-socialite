@@ -8,15 +8,13 @@ Add the following to your `services.php`,
 
 ```php
 'lexwareoffice' => [
-    'url' => env('LEXWARE_OFFICE_URL', 'https://sandbox.example.invalid'),
-    'api' => env('LEXWARE_OFFICE_API', 'https://api.sandbox.example.invalid'),
+    'url' => env('LEXWARE_OFFICE_URL', 'https://sandbox.example.com'),
+    'api' => env('LEXWARE_OFFICE_API', 'https://api.sandbox.example.com'),
     'client_id' => env('LEXWARE_OFFICE_CLIENT_ID'),
     'client_secret' => env('LEXWARE_OFFICE_CLIENT_SECRET'),
     'redirect' => env('LEXWARE_OFFICE_REDIRECT_URL'),
 ],
 ```
-
-Use the sandbox values provided to you privately; do not commit confidential endpoint URLs to public repositories.
 
 In `app/Providers/AppServiceProvider.php` add the following listener to the `SocialiteWasCalled` event:
 
